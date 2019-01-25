@@ -1,0 +1,18 @@
+lukeidraw
+===
+
+lukeidraw takes an image file (it supports only jpeg, png and gif formats) and
+prints a formated output that contains size of image and current terminal position.
+
+lukeidraw was built hoping it would be useful to solve a specific problem shown
+in Luke Smith's video: 
+	https://www.youtube.com/watch?v=Bocb8diNJA8
+
+The output is meant to be parsed by external programs, its output is formated as:
+	imageWidth;imageHeight-termRow;termColumn
+
+Example:
+	lukeidraw img.png
+	// 800;600-39;1
+
+To be built, lukeidraw requires Go 1.11.
