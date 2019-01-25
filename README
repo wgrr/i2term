@@ -9,7 +9,7 @@ in Luke Smith's video:
 	https://www.youtube.com/watch?v=Bocb8diNJA8
 
 The output is meant to be parsed by external programs, its output is formated as:
-	imageWidth;imageHeight-termRow;termColumn
+	imageWidth;imageHeight-termCurrentRow;termCurrentColumn
 
 Example:
 	lukeidraw img.png
