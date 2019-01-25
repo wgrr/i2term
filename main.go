@@ -1,3 +1,5 @@
+// +build linux darwin freebsd openbsd netbsd dragonfly solaris
+
 package main
 
 import (
