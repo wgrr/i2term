@@ -90,8 +90,7 @@ func main() {
 	if tpos == nil {
 		fatal("unexpected input from terminal")
 	}
-	fmt.Printf("%s\n", fmt.Sprintf("%d;%d", cfg.Width, cfg.Height))
-	fmt.Printf("%s\n", tpos[0])
+	fmt.Printf("%d;%d-%s\n", cfg.Width, cfg.Height, tpos[0])
 }
 
 // noreturn
