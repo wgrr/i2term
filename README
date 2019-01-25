@@ -1,5 +1,4 @@
 lukeidraw
-===
 
 lukeidraw takes an image file (it supports only jpeg, png and gif formats) and
 prints a formated output that contains size of image and current terminal position.
