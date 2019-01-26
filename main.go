@@ -113,7 +113,7 @@ func main() {
 
 	err = unix.IoctlSetTermios(0, unix.TCSETS, tmp)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "lukeidraw: %s\nyour terminal is broken, fix it manually by typing reset", err)
+		fmt.Fprintf(os.Stderr, "lukeidraw: %syour terminal is broken, fix it manually by typing reset\n", err)
 	}
 	fmt.Printf("%d %d %s %s\n", cfg.Width/charw, cfg.Height/charh, string(row[:len(row)-1]), string(col[:len(col)-1]))
 }
