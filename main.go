@@ -69,7 +69,7 @@ func main() {
 		fatal("couldn't setup termio to listen to terminal input: " + err.Error())
 	}
 
-	os.Stdout.Write([]byte{033, byte('['), byte('6'), byte('n')})
+	os.Stdout.WriteString("\x1b[6n")
 	r := bufio.NewReader(os.Stdin)
 	termin, err := r.ReadBytes(byte('R'))
 	if err != nil {
