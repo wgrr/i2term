@@ -1,17 +1,18 @@
 lukeidraw
 
-lukeidraw takes an image file (it supports only jpeg, png and gif formats) and
-prints a formated output that contains size of image and current terminal position.
+lukeidraw takes an image file (it supports only jpeg, png and gif
+encoding) and prints a formated output that has image dimensions and
+current terminal position in current terminal character size.
 
-lukeidraw was built hoping it would be useful to solve a specific problem shown
-in Luke Smith's video: 
+lukeidraw was built hoping it would be useful to solve a specific
+problem shown in Luke Smith's video:
 	https://www.youtube.com/watch?v=Bocb8diNJA8
 
-The output is meant to be parsed by external programs, its output is formated as:
-	imageWidth;imageHeight-termCurrentRow;termCurrentColumn
+The output is meant to be parsed by external programs, its output is
+formated as following:
+	imageWidth imageHeight termCurrentRow termCurrentColumn
 
 Example:
-	lukeidraw img.png
-	// 800;600-39;1
+	lukeidraw img.png # 800 600 39 1
 
 To be built, lukeidraw requires Go 1.11.
