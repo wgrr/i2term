@@ -13,6 +13,6 @@ formated as following:
 	imageWidth imageHeight termCurrentRow termCurrentColumn
 
 Example:
-	lukeidraw img.png # 800 600 39 1
+	lukeidraw img.png # 30 96 39 1
 
 To be built, lukeidraw requires Go 1.11.
