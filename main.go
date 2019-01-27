@@ -1,14 +1,5 @@
 // +build linux darwin freebsd openbsd netbsd dragonfly solaris
 
-// lukeidraw takes an image file (it supports jpeg, png, gif, bmp, tiff,
-// vp8l and webp encodings) and prints a formated output that has image
-// dimensions and current terminal position in terminal character size.
-// The output is meant to be parsed by external programs, its output is
-// formated as following:
-// 	imageWidth imageHeight termCurrentRow termCurrentColumn
-//
-// Example:
-//	lukeidraw img.png # 30 96 39 1
 package main
 
 import (
@@ -34,11 +25,14 @@ const usagestr = `lukeidraw: usage: [ file ]
 `
 
 var (
-	charwScale = 1.0
-	charhScale = 1.0
+	charwScale = flag.Float("-w", 1.0, "font width scaling factor")
+	charhScale = flag.Float("-h", 1.0, "font height scaling factor")
 )
 
 func main() {
+	flag.Parse()
+	// TODO
+	// flag.Usage = func() {}
 	if len(os.Args) < 2 {
 		fmt.Fprintf(os.Stderr, usagestr)
 		os.Exit(1)
