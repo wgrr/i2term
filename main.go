@@ -1,10 +1,12 @@
-// +build linux darwin freebsd openbsd netbsd dragonfly solaris
+// +build linux
 
 package main
 
 import (
 	"bufio"
 	"bytes"
+	"errors"
+	"flag"
 	"fmt"
 	"image"
 	"image/gif"
@@ -21,29 +23,25 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-const usagestr = `lukeidraw: usage: [ file ]
-`
-
 var (
-	charwScale = flag.Float("-w", 1.0, "font width scaling factor")
-	charhScale = flag.Float("-h", 1.0, "font height scaling factor")
+	charwScale = flag.Float64("w", 1.0, "font width scaling factor")
+	charhScale = flag.Float64("h", 1.0, "font height scaling factor")
 )
 
 func main() {
 	flag.Parse()
-	// TODO
-	// flag.Usage = func() {}
-	if len(os.Args) < 2 {
-		fmt.Fprintf(os.Stderr, usagestr)
-		os.Exit(1)
+	flag.Usage = usage
+
+	if len(flag.Args()) < 1 {
+		usage()
 	}
-	img, err := os.Open(os.Args[1])
+	file := flag.Arg(0)
+	img, err := os.Open(file)
 	if err != nil {
 		fatal(err.Error())
 	}
-
 	var cfg image.Config
-	switch filepath.Ext(os.Args[1]) {
+	switch filepath.Ext(file) {
 	case ".jpg":
 		fallthrough
 	case ".jpeg":
@@ -64,6 +62,9 @@ func main() {
 	case ".webp":
 		cfg, err = webp.DecodeConfig(img)
 		break
+	default:
+		err = errors.New("stub")
+		break
 	}
 	if err != nil {
 		// slow path, try to guess
@@ -72,23 +73,20 @@ func main() {
 			fatal(err.Error())
 		}
 	}
-
 	win, err := unix.IoctlGetWinsize(1, unix.TIOCGWINSZ)
 	if err != nil {
 		fatal(err.Error())
 	}
-	// just being paranoid about kernel input, im not being about terminal
-	// input because math.Ceil will round up character pixel dimensions, no
-	// div by 0 possible there.
-	if win.Row == 0 {
-		win.Row = 1
-	}
-	if win.Col == 0 {
-		win.Col = 1
-	}
 
-	charw := int(math.Ceil((float64(win.Ypixel) * charwScale) / float64(win.Row)))
-	charh := int(math.Ceil((float64(win.Xpixel) * charhScale) / float64(win.Col)))
+	// just being paranoid about kernel input
+	winrow, winpxrow := math.Max(float64(win.Row), 1.0), math.Max(float64(win.Ypixel), 1.0)
+	wincol, winpxcol := math.Max(float64(win.Col), 1.0), math.Max(float64(win.Xpixel), 1.0)
+
+	fontsclw := math.Max(*charwScale, 0.01)
+	fontsclh := math.Max(*charhScale, 0.01)
+
+	charw := int(math.Ceil((winpxrow * fontsclw) / winrow))
+	charh := int(math.Ceil((winpxcol * fontsclh) / wincol))
 
 	var term unix.Termios
 	tmp, err := unix.IoctlGetTermios(0, unix.TCGETS)
@@ -133,4 +131,10 @@ func main() {
 func fatal(err string) {
 	fmt.Fprintf(os.Stderr, "lukeidraw: %v\n", err)
 	os.Exit(1)
+}
+
+func usage() {
+	fmt.Fprintf(os.Stderr, "lukeidraw: usage: [ flags ] [ file... ]\n")
+	flag.PrintDefaults()
+	os.Exit(2)
 }
