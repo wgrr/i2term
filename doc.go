@@ -5,7 +5,7 @@ vp8l and webp encodings) and prints image dimensions in terminal
 character size.
 
 Its output  is formated as following:
-	imageWidth imageHeight
+	imageRows imageCols
 
 */
 package main

@@ -9,4 +9,4 @@ specific problem shown in Luke Smith's video:
 	https://www.youtube.com/watch?v=Bocb8diNJA8
 
 Its output  is formated as following:
-	imageWidth imageHeight
+	imageRows imageCols

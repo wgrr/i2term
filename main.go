@@ -24,7 +24,7 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-func i2term(img io.Reader, name string, wscale, hscale float64) (width, height int, err error) {
+func i2term(img io.Reader, name string, wscale, hscale float64) (row, col int, err error) {
 	var cfg image.Config
 	switch filepath.Ext(name) {
 	case ".jpg":
@@ -74,16 +74,16 @@ func i2term(img io.Reader, name string, wscale, hscale float64) (width, height i
 	}
 
 	// just being paranoid about kernel input
-	winrow, winpxrow := math.Max(float64(win.Row), 1.0), math.Max(float64(win.Ypixel), 1.0)
-	wincol, winpxcol := math.Max(float64(win.Col), 1.0), math.Max(float64(win.Xpixel), 1.0)
+	winrow, winpxrow := math.Max(float64(win.Row), 1.0), math.Max(float64(win.Ypixel-2), 1.0)
+	wincol, winpxcol := math.Max(float64(win.Col), 1.0), math.Max(float64(win.Xpixel-2), 1.0)
 
 	// user input, avoid div by 0
 	fontsclw := math.Max(wscale, 0.01)
 	fontsclh := math.Max(hscale, 0.01)
 
-	width = int(math.Ceil((winpxrow * fontsclw) / winrow))
-	height = int(math.Ceil((winpxcol * fontsclh) / wincol))
-	return cfg.Width / width, cfg.Height / height, nil
+	col = int(math.Ceil((winpxcol * fontsclh) / wincol))
+	row = int(math.Ceil((winpxrow * fontsclw) / winrow))
+	return cfg.Height / row, cfg.Width / col, nil
 }
 
 func main() {
@@ -99,11 +99,11 @@ func main() {
 		if err != nil {
 			fatal(err.Error())
 		}
-		w, h, err := i2term(bytes.NewReader(tmp), "<stdin>", *wscaleFactor, *hscaleFactor)
+		row, col, err := i2term(bytes.NewReader(tmp), "<stdin>", *wscaleFactor, *hscaleFactor)
 		if err != nil {
 			fatal(err.Error())
 		}
-		fmt.Printf("%d %d\n", w, h)
+		fmt.Printf("%d %d\n", row, col)
 		return
 	}
 	for _, file := range flag.Args() {
@@ -112,11 +112,11 @@ func main() {
 			fatal(err.Error())
 		}
 		defer img.Close()
-		w, h, err := i2term(img, file, *wscaleFactor, *hscaleFactor)
+		row, col, err := i2term(img, file, *wscaleFactor, *hscaleFactor)
 		if err != nil {
 			fatal(err.Error())
 		}
-		fmt.Fprintf(os.Stdout, "%d %d\n", w, h)
+		fmt.Fprintf(os.Stdout, "%d %d\n", row, col)
 	}
 }
 
