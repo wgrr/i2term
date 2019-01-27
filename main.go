@@ -3,6 +3,7 @@
 package main
 
 import (
+	"bytes"
 	"errors"
 	"flag"
 	"fmt"
@@ -10,6 +11,8 @@ import (
 	"image/gif"
 	"image/jpeg"
 	"image/png"
+	"io"
+	"io/ioutil"
 	"math"
 	"os"
 	"path/filepath"
@@ -21,25 +24,9 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-var (
-	charwScale = flag.Float64("w", 1.0, "font width scaling factor")
-	charhScale = flag.Float64("h", 1.0, "font height scaling factor")
-)
-
-func main() {
-	flag.Parse()
-	flag.Usage = usage
-
-	if len(flag.Args()) < 1 {
-		usage()
-	}
-	file := flag.Arg(0)
-	img, err := os.Open(file)
-	if err != nil {
-		fatal(err.Error())
-	}
+func i2term(img io.Reader, name string, wscale, hscale float64) (width, height int, err error) {
 	var cfg image.Config
-	switch filepath.Ext(file) {
+	switch filepath.Ext(name) {
 	case ".jpg":
 		fallthrough
 	case ".jpeg":
@@ -61,19 +48,29 @@ func main() {
 		cfg, err = webp.DecodeConfig(img)
 		break
 	default:
-		err = errors.New("stub")
+		err = errors.New("dummy")
 		break
 	}
 	if err != nil {
 		// slow path, try to guess
 		cfg, _, err = image.DecodeConfig(img)
 		if err != nil {
-			fatal(err.Error())
+			return 0, 0, err
 		}
 	}
+
 	win, err := unix.IoctlGetWinsize(0, unix.TIOCGWINSZ)
 	if err != nil {
-		fatal(err.Error())
+		// it might be a pipe writing to our stdin, so try stdout
+		win, err = unix.IoctlGetWinsize(1, unix.TIOCGWINSZ)
+		if err != nil {
+			// so maybe process substution? try stderr
+			win, err = unix.IoctlGetWinsize(2, unix.TIOCGWINSZ)
+			if err != nil {
+				// we tried out best
+				return 0, 0, err
+			}
+		}
 	}
 
 	// just being paranoid about kernel input
@@ -81,23 +78,56 @@ func main() {
 	wincol, winpxcol := math.Max(float64(win.Col), 1.0), math.Max(float64(win.Xpixel), 1.0)
 
 	// user input, avoid div by 0
-	fontsclw := math.Max(*charwScale, 0.01)
-	fontsclh := math.Max(*charhScale, 0.01)
+	fontsclw := math.Max(wscale, 0.01)
+	fontsclh := math.Max(hscale, 0.01)
 
-	charw := int(math.Ceil((winpxrow * fontsclw) / winrow))
-	charh := int(math.Ceil((winpxcol * fontsclh) / wincol))
+	width = int(math.Ceil((winpxrow * fontsclw) / winrow))
+	height = int(math.Ceil((winpxcol * fontsclh) / wincol))
+	return cfg.Width / width, cfg.Height / height, nil
+}
 
-	fmt.Printf("%d %d\n", cfg.Width/charw, cfg.Height/charh)
+func main() {
+	wscaleFactor := flag.Float64("w", 1.0, "font width scaling factor")
+	hscaleFactor := flag.Float64("h", 1.0, "font height scaling factor")
+	flag.Usage = usage
+	flag.Parse()
+
+	if len(flag.Args()) < 1 {
+		// can we do this os the fly?
+		// atm it's a hack to close shell pipe writer.
+		tmp, err := ioutil.ReadAll(os.Stdin)
+		if err != nil {
+			fatal(err.Error())
+		}
+		w, h, err := i2term(bytes.NewReader(tmp), "<stdin>", *wscaleFactor, *hscaleFactor)
+		if err != nil {
+			fatal(err.Error())
+		}
+		fmt.Printf("%d %d\n", w, h)
+		return
+	}
+	for _, file := range flag.Args() {
+		img, err := os.Open(file)
+		if err != nil {
+			fatal(err.Error())
+		}
+		defer img.Close()
+		w, h, err := i2term(img, file, *wscaleFactor, *hscaleFactor)
+		if err != nil {
+			fatal(err.Error())
+		}
+		fmt.Fprintf(os.Stdout, "%d %d\n", w, h)
+	}
 }
 
 // noreturn
 func fatal(err string) {
-	fmt.Fprintf(os.Stderr, "lukeidraw: %v\n", err)
+	fmt.Fprintf(os.Stderr, "i2term: %v\n", err)
 	os.Exit(1)
 }
 
 func usage() {
-	fmt.Fprintf(os.Stderr, "lukeidraw: usage: [ flags ] [ file... ]\n")
+	fmt.Fprintf(os.Stderr, "i2term: usage: [ flags ] [ file... ]\n")
 	flag.PrintDefaults()
 	os.Exit(2)
 }
