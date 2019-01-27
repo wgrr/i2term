@@ -1,8 +1,8 @@
 lukeidraw
 
-lukeidraw takes an image file (it supports only jpeg, png and gif
-encoding) and prints a formated output that has image dimensions and
-current terminal position in current terminal character size.
+lukeidraw takes an image file (it supports jpeg, png, gif, bmp, tiff,
+vp8l and webp encodings) and prints a formated output that has image
+dimensions and current terminal position in terminal character size.
 
 lukeidraw was built hoping it would be useful to solve a specific
 problem shown in Luke Smith's video:

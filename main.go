@@ -1,5 +1,14 @@
 // +build linux darwin freebsd openbsd netbsd dragonfly solaris
 
+// lukeidraw takes an image file (it supports jpeg, png, gif, bmp, tiff,
+// vp8l and webp encodings) and prints a formated output that has image
+// dimensions and current terminal position in terminal character size.
+// The output is meant to be parsed by external programs, its output is
+// formated as following:
+// 	imageWidth imageHeight termCurrentRow termCurrentColumn
+//
+// Example:
+//	lukeidraw img.png # 30 96 39 1
 package main
 
 import (
@@ -14,6 +23,10 @@ import (
 	"os"
 	"path/filepath"
 
+	"golang.org/x/image/bmp"
+	"golang.org/x/image/tiff"
+	_ "golang.org/x/image/vp8l"
+	"golang.org/x/image/webp"
 	"golang.org/x/sys/unix"
 )
 
@@ -41,21 +54,25 @@ func main() {
 		fallthrough
 	case ".jpeg":
 		cfg, err = jpeg.DecodeConfig(img)
-		if err != nil {
-			fatal(err.Error())
-		}
-	case ".gif":
-		cfg, err = gif.DecodeConfig(img)
-		if err != nil {
-			fatal(err.Error())
-		}
+		break
 	case ".png":
 		cfg, err = png.DecodeConfig(img)
-		if err != nil {
-			fatal(err.Error())
-		}
-	default:
-		// try to guess, it might be a image without an filename extension
+		break
+	case ".gif":
+		cfg, err = gif.DecodeConfig(img)
+		break
+	case ".bmp":
+		cfg, err = bmp.DecodeConfig(img)
+		break
+	case ".tiff":
+		cfg, err = tiff.DecodeConfig(img)
+		break
+	case ".webp":
+		cfg, err = webp.DecodeConfig(img)
+		break
+	}
+	if err != nil {
+		// slow path, try to guess
 		cfg, _, err = image.DecodeConfig(img)
 		if err != nil {
 			fatal(err.Error())
