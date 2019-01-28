@@ -67,7 +67,7 @@ func i2term(img io.Reader, name string, wscale, hscale float64) (row, col int, e
 			// so maybe process substution? try stderr
 			win, err = unix.IoctlGetWinsize(2, unix.TIOCGWINSZ)
 			if err != nil {
-				// we tried out best
+				// we tried our best
 				return 0, 0, err
 			}
 		}
