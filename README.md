@@ -4,9 +4,5 @@ i2term takes an image file (it supports jpeg, png, gif, bmp, tiff,
 vp8l and webp encodings) and prints image dimensions in terminal
 character size.
 
-i2term was first built hoping it would be useful to solve a
-specific problem shown in Luke Smith's video:
-	https://www.youtube.com/watch?v=Bocb8diNJA8
-
 Its output  is formated as following:
 	imageRows imageCols
