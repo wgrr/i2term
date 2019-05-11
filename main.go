@@ -31,25 +31,18 @@ func i2term(img io.Reader, name string, wscale, hscale float64) (row, col int, e
 		fallthrough
 	case ".jpeg":
 		cfg, err = jpeg.DecodeConfig(img)
-		break
 	case ".png":
 		cfg, err = png.DecodeConfig(img)
-		break
 	case ".gif":
 		cfg, err = gif.DecodeConfig(img)
-		break
 	case ".bmp":
 		cfg, err = bmp.DecodeConfig(img)
-		break
 	case ".tiff":
 		cfg, err = tiff.DecodeConfig(img)
-		break
 	case ".webp":
 		cfg, err = webp.DecodeConfig(img)
-		break
 	default:
 		err = errors.New("dummy")
-		break
 	}
 	if err != nil {
 		// slow path, try to guess
@@ -127,7 +120,7 @@ func fatal(err string) {
 }
 
 func usage() {
-	fmt.Fprintf(os.Stderr, "i2term: usage: [ flags ] [ file... ]\n")
+	fmt.Fprintf(os.Stderr, "%s: usage: [ flags ] [ file... ]\n", os.Args[0])
 	flag.PrintDefaults()
 	os.Exit(2)
 }
